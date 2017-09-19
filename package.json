@@ -2,6 +2,9 @@
   "name": "express-es6-rest-api",
   "version": "0.3.0",
   "description": "CabM8 API",
+  "engines" : {
+    "node" : ">=7.0.x"
+  },
   "main": "dist",
   "scripts": {
     "dev": "nodemon -w src --exec \"babel-node src\"",
@@ -20,6 +23,9 @@
       [
         "env",
         {
+          "targets": {
+            "node": "current"
+          },
           "include": [
             "transform-es2015-spread"
           ]
