@@ -4,13 +4,28 @@
   "description": "CabM8 API",
   "main": "dist",
   "scripts": {
-    "dev": "nodemon -w src --exec \"babel-node src --presets env\"",
-    "build": "babel src -s -D -d dist --presets env",
+    "dev": "nodemon -w src --exec \"babel-node src\"",
+    "build": "babel src -s -D -d dist",
     "start": "node dist",
     "prestart": "npm run -s build",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix",
     "test": "eslint src"
+  },
+  "babel": {
+    "plugins": [
+      "transform-object-rest-spread"
+    ],
+    "presets": [
+      [
+        "env",
+        {
+          "include": [
+            "transform-es2015-spread"
+          ]
+        }
+      ]
+    ]
   },
   "eslintConfig": {
     "extends": "standard",
@@ -29,9 +44,19 @@
     },
     "rules": {
       "key-spacing": "off",
-      "max-len": [2, 120, 2],
-      "object-curly-spacing": [2, "always"],
-      "comma-dangle": ["error", "only-multiline"]
+      "max-len": [
+        2,
+        120,
+        2
+      ],
+      "object-curly-spacing": [
+        2,
+        "always"
+      ],
+      "comma-dangle": [
+        "error",
+        "only-multiline"
+      ]
     }
   },
   "repository": "developit/express-es6-rest-api",
@@ -48,6 +73,7 @@
   "devDependencies": {
     "babel-cli": "^6.9.0",
     "babel-core": "^6.9.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.0",
     "eslint": "^4.1.1",
     "eslint-config-standard": "^10.2.1",
