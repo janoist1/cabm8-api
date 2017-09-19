@@ -5,4 +5,7 @@ module.exports = {
   port: process.env.PORT || 8080,
   bodyLimit: '100kb',
   corsHeaders: ['Link'],
+  esConfig: {
+    host: process.env.ESHOST,
+  },
 }

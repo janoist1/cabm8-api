@@ -11,24 +11,16 @@ import config from '../project.config'
 const app = express()
 app.server = http.createServer(app)
 
-// logger
 app.use(morgan('dev'))
-
-// 3rd party middleware
 app.use(cors({
   exposedHeaders: config.corsHeaders,
 }))
-
 app.use(bodyParser.json({
   limit: config.bodyLimit,
 }))
 
-// connect to db
-initializeDb(db => {
-  // internal middleware
+initializeDb({ config: config.esConfig }).then(db => {
   app.use(middleware({ config, db }))
-
-  // api router
   app.use('/api', api({ config, db }))
 
   app.server.listen(config.port, () => {
