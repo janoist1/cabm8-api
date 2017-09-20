@@ -9,7 +9,6 @@ export default ({ config, debug = console.log }) => {
   const getDb = () => ({
     health,
     search,
-    searchLocation,
     insertUser,
     getUser,
     updateUser,
@@ -17,8 +16,22 @@ export default ({ config, debug = console.log }) => {
     findUsers,
     countUsers,
     insertTrip,
+    getTrip,
+    updateTrip,
+    deleteTrip,
+    searchTrips,
+    searchTripsByDistance,
+    countTrips,
     getClient: () => client,
   })
+
+  // general shit
+
+  const getHits = result => result.hits.hits.map(getSource)
+
+  const getSource = hit => hit._source
+
+  const search = q => client.search({ index: INDEX, q })
 
   const init = () => indexExists()
     .then(exists => {
@@ -88,26 +101,6 @@ export default ({ config, debug = console.log }) => {
       })
 
   const indexExists = () => client.indices.exists({ index: INDEX })
-
-  const searchLocation = ({ distance, origin }) => client.search({
-    index: INDEX,
-    // type: USERS_TYPE,
-    body: {
-      query: {
-        bool: {
-          must: {
-            match_all: {},
-          },
-          filter: {
-            geo_distance: {
-              origin,
-              distance,
-            }
-          }
-        }
-      }
-    }
-  })
 
   const deleteIndex = () => client.indices.delete({ index: INDEX })
   // .then(response => {
@@ -186,13 +179,56 @@ export default ({ config, debug = console.log }) => {
     body: trip,
   })
 
-  // general shit
+  const updateTrip = trip => client.update({
+    index: INDEX,
+    type: TRIPS_TYPE,
+    id: trip.id,
+    body: { doc: trip },
+  })
 
-  const getHits = result => result.hits.hits.map(getSource)
+  const deleteTrip = ({ id }) => client.delete({
+    index: INDEX,
+    type: TRIPS_TYPE,
+    id,
+  })
 
-  const getSource = hit => hit._source
+  const searchTrips = body => client.search({
+    index: INDEX,
+    type: TRIPS_TYPE,
+    body,
+  }).then(getHits)
 
-  const search = q => client.search({ index: INDEX, q })
+  const searchTripsByDistance = ({ distance, origin, destination, match = {} }) => client.search({
+    index: INDEX,
+    type: TRIPS_TYPE,
+    body: {
+      query: {
+        bool: {
+          must: {
+            match_all: match,
+          },
+          filter: {
+            geo_distance: {
+              ...(origin ? { origin } : {}),
+              ...(destination ? { destination } : {}),
+              distance,
+            }
+          }
+        }
+      }
+    }
+  })
+
+  const getTrip = id => client.get({
+    index: INDEX,
+    type: TRIPS_TYPE,
+    id,
+  }).then(getSource)
+
+  const countTrips = () => client.count({
+    index: INDEX,
+    type: TRIPS_TYPE,
+  })
 
   return init()
 }
