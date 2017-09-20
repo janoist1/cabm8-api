@@ -11,7 +11,7 @@ import config from '../project.config'
 const app = express()
 app.server = http.createServer(app)
 
-app.use(morgan('dev'))
+app.use(morgan(config.env === 'development' ? 'dev' : 'common'))
 app.use(cors({
   exposedHeaders: config.corsHeaders,
 }))
