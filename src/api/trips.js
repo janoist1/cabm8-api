@@ -25,7 +25,7 @@ export default ({ config, db }) => {
     },
 
     async index ({ params }, res) {
-      const trips = await db.findTrips()
+      const trips = await db.searchTrips()
 
       res.json(trips)
     },
