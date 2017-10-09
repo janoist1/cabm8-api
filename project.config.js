@@ -5,7 +5,6 @@ module.exports = {
   port: process.env.PORT || 8080,
   bodyLimit: '100kb',
   corsHeaders: ['Link'],
-  esConfig: {
-    host: process.env.ESHOST,
-  },
+  dbUrl: process.env.DATABASE_URL,
+  esUrl: process.env.ES_URL,
 }

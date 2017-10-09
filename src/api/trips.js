@@ -18,7 +18,7 @@ export default ({ config, db }) => {
 
     async load (req, id, callback) {
       try {
-        callback(null, await db.getTrip(id))
+        callback(null, await db.getTrip(id, 'test123'))
       } catch (error) {
         callback(error.message)
       }
@@ -31,10 +31,17 @@ export default ({ config, db }) => {
     },
 
     create ({ body }, res) {
-      db.insertTrip({
+      const trip = {
         ...body,
         created: new Date().toISOString(),
-      })
+      }
+      const user = {
+        id: trip.user_id,
+      }
+
+      delete trip.user_id
+
+      db.insertTrip(trip, user)
 
       res.json(body)
     },

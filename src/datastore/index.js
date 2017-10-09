@@ -1,39 +1,47 @@
-import Sequelize from 'sequelize'
-import Pg from 'pg'
+import initDatabase from './initDatabase'
 import initSearch from './initSearch'
 
-Pg.defaults.ssl = true
-
-const INDEX = 'cabm8'
-const USERS_TYPE = 'users'
-const TRIPS_TYPE = 'trips'
+const mergedFns = {
+  insertUser: true,
+  updateUser: true,
+  deleteUser: true,
+  findUser: false,
+  insertTrip: true,
+  updateTrip: true,
+  deleteTrip: true,
+  findTrip: false,
+  search: false,
+  searchTrips: false,
+  searchTripsByDistance: false,
+}
 
 export default async ({ config, log = console.log }) => {
-  const db = new Sequelize(config.dbUrl)
+  const db = await initDatabase({ config, log })
+  const es = await initSearch({ config, log })
+  const ds = { es, db }
 
-  try {
-    db.authenticate()
-  } catch (error) {
-    log('Unable to connect to the database:', error)
+  for (let [fn, synchronized] of Object.entries(mergedFns)) {
+    if (synchronized) {
+      if (!db[fn] || !es[fn]) {
+        throw Error(`Missing function to synchronize: ${fn}`)
+      }
+
+      ds[fn] = async (...args) => {
+        const result = await db[fn](...args)
+        await es[fn](...args)
+
+        return result
+      }
+
+      continue
+    }
+
+    if (!db[fn] && !es[fn]) {
+      throw Error(`Missing function to merge: ${fn}`)
+    }
+
+    ds[fn] = db[fn] || es[fn]
   }
 
-  const User = db.define('user', {
-    username: Sequelize.STRING,
-    birthday: Sequelize.DATE
-  })
-
-  await db.sync({ force: false })
-
-  console.log('szink ok')
-
-  const user = await User.create({
-    username: 'janedoe',
-    birthday: new Date(1980, 6, 20)
-  })
-
-  console.log(user.get({
-    plain: true
-  }))
-
-  return init()
+  return ds
 }

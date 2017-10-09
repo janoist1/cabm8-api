@@ -3,7 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'
 import bodyParser from 'body-parser'
-import initializeDb from './db'
+import initializeDs from './datastore'
 import middleware from './middleware'
 import api from './api'
 import config from '../project.config'
@@ -19,13 +19,17 @@ app.use(bodyParser.json({
   limit: config.bodyLimit,
 }))
 
-initializeDb({ config: config.esConfig }).then(db => {
-  app.use(middleware({ config, db }))
-  app.use('/api', api({ config, db }))
+export default initializeDs({ config })
+  .then(ds => {
+    app.use(middleware({ config, ds }))
+    app.use('/api', api({ config, ds }))
 
-  app.server.listen(config.port, () => {
-    console.log(`Started on port ${app.server.address().port}`)
+    app.server.listen(config.port, () => {
+      console.log(`Started on port ${app.server.address().port}`)
+    })
+
+    return app
   })
-})
-
-export default app
+  .catch(error => {
+    console.error('Could not start server', error)
+  })
